@@ -50,7 +50,7 @@ hash = Hash[input].transform_values { |v| v.strip.split(', ').map { |str| str.sp
 # 170 too low
 # 240 too low
 # 95436781513680 too high
-def find_weight(hash, target = TARGET, weight = 0)
+def find_weight(hash, target = TARGET, weight = 0, depth = 1)
   return weight if target == 'other bag'
 
   children = hash.fetch(target)
