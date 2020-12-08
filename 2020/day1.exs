@@ -6,13 +6,10 @@ defmodule Day1 do
     @input
     |> TwoSum.find(@goal)
     |> Enum.reduce(&(&1 * &2))
-    |> IO.puts()
   end
 
   def part2 do
-    @input
-    |> three_sum(@goal)
-    |> IO.puts()
+    @input |> three_sum(@goal)
   end
 
   defp three_sum([head | tail], goal) do
@@ -42,5 +39,5 @@ defmodule TwoSum do
   defp run([], _goal, _map), do: nil
 end
 
-Day1.part1
-Day1.part2
+Day1.part1 |> IO.puts
+Day1.part2 |> IO.puts

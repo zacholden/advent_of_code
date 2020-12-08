@@ -17,6 +17,8 @@ def bsearch(str)
 end
 
 seats = input.map { |str| bsearch(str[0..6]) * 8 + bsearch(str[7..9]) }.sort
+# one liner
+#seats = File.read('day5.txt').gsub(/B|R/, '1').gsub(/F|L/, '0').split("\n").map { |str| str[0..6].to_i(2) * 8 + str[7..9].to_i(2) }.sort
 
 puts seats.last
 puts (seats.first..seats.last).to_a.difference(seats)

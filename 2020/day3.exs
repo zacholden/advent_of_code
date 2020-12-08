@@ -1,5 +1,5 @@
 defmodule Day3 do
-  @grid File.read!('day3.txt') |> String.split("\n", trim: true)
+  @grid File.stream!('day3.txt') |> Enum.map(&String.trim/1)
   @grid_length @grid |> Enum.count()
   @grid_width @grid |> hd |> String.length()
 
