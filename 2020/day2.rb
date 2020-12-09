@@ -3,7 +3,7 @@ def valid?(range, letter, password)
 end
 
 def xor?(range, letter, password)
-  (password[range.begin - 1] == letter) && !(password[range.end - 1] == letter) || !(password[range.begin - 1] == letter) && (password[range.end - 1] == letter)
+  (password[range.begin - 1] == letter) ^ (password[range.end - 1] == letter)
 end
 
 input = File

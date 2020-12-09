@@ -9,9 +9,7 @@ defmodule Day3 do
 
   def part2 do
     [{1, 1}, {1, 3}, {1, 5}, {1, 7}, {2, 1}]
-    |> Enum.map(fn {y, x} ->
-      Task.async(fn -> traverse({0, 0}, 0, y, x) end)
-    end)
+    |> Enum.map(fn {y, x} -> Task.async(fn -> traverse({0, 0}, 0, y, x) end) end)
     |> Task.await_many
     |> Enum.reduce(&(&1 * &2))
   end
