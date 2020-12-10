@@ -2,7 +2,7 @@ defmodule Day7 do
   require IEx
 
   @moduledoc """
-  Documentation for `Day7`.
+  Solution to Advent of Code 2020 day 7.
   """
 
   @target "shiny gold bag"
@@ -28,7 +28,7 @@ defmodule Day7 do
   end
 
   def part2 do
-    find_weight(@target)
+    find_weight(@target, 1)
   end
 
   def build_list(set, [head | tail]) do
@@ -42,24 +42,15 @@ defmodule Day7 do
 
   def build_list(set, []), do: set |> Enum.count()
 
-  def find_weight(bag) do
-    find_weight(bag, 0, 1)       
-  end
-
-  def find_weight(bag, weight, depth) do
+  def find_weight(bag, depth) do
     rules = Map.get(@input, bag)
-    local_weight = rules |> Enum.reduce(weight, fn {_bag, amount}, acc -> acc + amount * depth end)
+    local_weight = rules |> Enum.reduce(0, fn {_bag, amount}, acc -> acc + amount * depth end)
 
     if local_weight == 0 do
       local_weight
     else
-      child_weights = Enum.map(rules, fn {k,v} -> find_weight(k, 0, depth * v) end) |> Enum.sum
-
+      child_weights = Stream.map(rules, fn {k,v} -> find_weight(k, depth * v) end) |> Enum.sum
       local_weight + child_weights
     end
-  end
-
-  def lol do
-    @input
   end
 end
