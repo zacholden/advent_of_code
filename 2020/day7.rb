@@ -4,6 +4,7 @@ require 'pry'
 input = File.read('day7.txt').delete(".").gsub(/\d/, "").gsub('bags', 'bag').split("\n").map { |str| str.split(" contain ") }
 hash = Hash[input].transform_values { |val| Set.new(val.lstrip.split(",  ")) }
 TARGET = 'shiny gold bag'
+pry
 
 def search(hash, visited = Set.new, queue = [TARGET])
   target = queue.shift
@@ -21,7 +22,7 @@ def search(hash, visited = Set.new, queue = [TARGET])
   end
 end
 
-#search(hash.dup)
+search(hash.dup)
 
 file = "shiny gold bags contain 2 dark red bags.
 dark red bags contain 2 dark orange bags.
