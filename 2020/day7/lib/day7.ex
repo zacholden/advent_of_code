@@ -10,10 +10,10 @@ defmodule Day7 do
          |> String.replace(".", "")
          |> String.replace("bags", "bag")
          |> String.split("\n", trim: true)
-         |> Enum.map(&String.split(&1, " contain "))
-         |> Enum.map(fn list -> List.to_tuple(list) end)
-         |> Enum.map(fn {k, v} -> {k, String.split(v, ", ")} end)
-         |> Enum.map(fn {k, v} ->
+         |> Stream.map(&String.split(&1, " contain "))
+         |> Stream.map(fn list -> List.to_tuple(list) end)
+         |> Stream.map(fn {k, v} -> {k, String.split(v, ", ")} end)
+         |> Stream.map(fn {k, v} ->
            {k,
             Enum.map(v, fn str -> String.split(str, " ", parts: 2) end)
             |> Enum.reverse()
@@ -49,8 +49,13 @@ defmodule Day7 do
     if local_weight == 0 do
       local_weight
     else
-      child_weights = Stream.map(rules, fn {k,v} -> find_weight(k, depth * v) end) |> Enum.sum
+      child_weights =
+        Stream.map(rules, fn {bag, amount} -> find_weight(bag, depth * amount) end) |> Enum.sum()
+
       local_weight + child_weights
     end
   end
 end
+
+Day7.part1 |> IO.puts
+Day7.part2 |> IO.puts
