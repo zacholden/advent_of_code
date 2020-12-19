@@ -31,7 +31,7 @@ defmodule Day11 do
     if new_grid != grid do
       tick(new_grid)
     else
-      tick(Map.values(new_grid))
+      new_grid |> Map.values |> tick
     end
   end
 
@@ -44,13 +44,13 @@ defmodule Day11 do
       Stream.map(grid, fn {coords, value} -> {coords, change_los(grid, coords, value)} end)
       |> Enum.into(%{})
 
-    #print(grid)
-    #IO.puts("\n")
+    # print(grid)
+    # IO.puts("\n")
 
     if new_grid != grid do
       tick_los(new_grid)
     else
-      tick_los(Map.values(new_grid))
+      new_grid |> Map.values |> tick_los
     end
   end
 
@@ -95,10 +95,11 @@ defmodule Day11 do
   end
 
   def change_los(grid, {y, x}, value) do
-    neighbours = find_los_neighbours(grid, {y, x})
-                 |> Enum.reduce(@neighbours_map, fn str, acc ->
-                   Map.update(acc, str, 0, fn default -> default + 1 end)
-                 end)
+    neighbours =
+      find_los_neighbours(grid, {y, x})
+      |> Enum.reduce(@neighbours_map, fn str, acc ->
+        Map.update(acc, str, 0, fn default -> default + 1 end)
+      end)
 
     case value do
       "L" ->
@@ -140,7 +141,7 @@ defmodule Day11 do
 
     case Map.get(grid, {new_y, new_x}) do
       "#" ->
-        "#" 
+        "#"
 
       "L" ->
         "L"
@@ -165,5 +166,5 @@ defmodule Day11 do
   end
 end
 
-#Day11.part1() |> IO.puts()
+Day11.part1() |> IO.puts()
 Day11.part2() |> IO.puts()
