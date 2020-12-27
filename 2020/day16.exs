@@ -1,5 +1,7 @@
 defmodule Day16 do
-  # 1164645205103 too high
+  # NOTE:
+  # Defining all the rules as functions in the module is probably not the best approach
+  # to this problem but I wanted to learn about how unquote worked.
   @input File.read!('day16.txt') |> String.split("\n\n")
   @rules @input
          |> List.first()
