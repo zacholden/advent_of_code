@@ -10,7 +10,7 @@ defmodule Day7 do
          |> Enum.map(&List.to_tuple/1)
 
   def part1 do
-    keys = @input |> Stream.flat_map(&Tuple.to_list/1) |> Enum.uniq() |> MapSet.new()
+    keys = @input |> Stream.flat_map(&Tuple.to_list/1) |> Enum.uniq()
 
     graph =
       @input
@@ -18,21 +18,18 @@ defmodule Day7 do
         Map.update(acc, key, [value], fn existing_value -> [value | existing_value] end)
       end)
 
-    letters =
-      MapSet.difference(keys, MapSet.new(Map.keys(graph))) |> MapSet.to_list() |> Enum.sort()
+    letters = (keys -- Map.keys(graph)) |> Enum.sort()
 
     traverse(letters, graph, [])
   end
 
   def traverse([head | tail], graph, result) do
     new_graph =
-      Enum.map(graph, fn {k, v} -> {k, v -- [head]} end)
-      |> Enum.filter(fn {_k, v} -> v != [] end)
+      Stream.map(graph, fn {k, v} -> {k, v -- [head]} end)
+      |> Stream.filter(fn {_k, v} -> v != [] end)
       |> Enum.into(%{})
 
-    new_letters = MapSet.difference(MapSet.new(Map.keys(graph)), MapSet.new(Map.keys(new_graph)))
-
-    new_keys = (tail ++ MapSet.to_list(new_letters)) |> Enum.sort()
+    new_keys = ((Map.keys(graph) -- Map.keys(new_graph)) ++ tail) |> Enum.sort()
 
     traverse(new_keys, new_graph, [head | result])
   end
