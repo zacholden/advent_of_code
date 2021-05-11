@@ -1,24 +1,21 @@
 defmodule Day7 do
-  # @input File.read!('day7test.txt')
+  # @input File.read!("day7test.txt")
   @input File.read!("day7.txt")
+         |> String.split("\n", trim: true)
+         |> Stream.map(fn str ->
+           String.replace(str, "Step ", "")
+           |> String.replace(" can begin.", "")
+           |> String.split(" must be finished before step ")
+         end)
+         |> Enum.map(&List.to_tuple/1)
 
   def part1 do
-    parsed =
-      @input
-      |> String.split("\n", trim: true)
-      |> Enum.map(fn str ->
-        String.replace(str, "Step ", "")
-        |> String.replace(" can begin.", "")
-        |> String.split(" must be finished before step ")
-      end)
-
-    keys = parsed |> Stream.flat_map(fn a -> a end) |> Enum.uniq() |> MapSet.new()
+    keys = @input |> Stream.flat_map(&Tuple.to_list/1) |> Enum.uniq() |> MapSet.new()
 
     graph =
-      parsed
-      |> Enum.map(&Enum.reverse/1)
-      |> Enum.reduce(%{}, fn list, acc ->
-        Map.update(acc, hd(list), tl(list), fn existing_value -> existing_value ++ tl(list) end)
+      @input
+      |> Enum.reduce(%{}, fn {value, key}, acc ->
+        Map.update(acc, key, [value], fn existing_value -> [value | existing_value] end)
       end)
 
     letters =
@@ -45,4 +42,4 @@ defmodule Day7 do
   end
 end
 
-Day7.part1() |> IO.puts
+Day7.part1() |> IO.puts()
