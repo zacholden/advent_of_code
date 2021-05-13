@@ -25,8 +25,8 @@ defmodule Day7 do
 
   def traverse([head | tail], graph, result) do
     new_graph =
-      Stream.map(graph, fn {k, v} -> {k, v -- [head]} end)
-      |> Stream.filter(fn {_k, v} -> v != [] end)
+      Stream.map(graph, fn {k, v} -> {k, Enum.reject(v, &(&1 == head))} end)
+      |> Stream.filter(fn {_k, v} -> Enum.any?(v) end)
       |> Enum.into(%{})
 
     new_keys = ((Map.keys(graph) -- Map.keys(new_graph)) ++ tail) |> Enum.sort()
