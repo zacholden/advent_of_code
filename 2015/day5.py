@@ -40,8 +40,29 @@ for i in data:
 
 print(total)
 
+# part 2
+
+total2 = 0
+
+test = ['qjhvhtzxzqqjkmpb', 'xxyxx', 'uurcxstgmygtbstg', 'ieodomkazucvgmuy']
+
 for i in data:
     string = i.rstrip()
 
-    for index in range(len(string) - 1):
-        print(string)
+    repeating = False
+    overlaps = False
+
+    for char in range(len(string) - 2):
+        if string[char:char+2] in string[char+2:]:
+            repeating = True
+            break
+
+    for char in range(len(string) - 2):
+        if string[char] == string[char+2]:
+            overlaps = True
+            break
+
+    if repeating and overlaps:
+        total2 += 1
+
+print(total2)
