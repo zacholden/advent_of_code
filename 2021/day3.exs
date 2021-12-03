@@ -17,45 +17,28 @@ File.read!("day3.txt")
 |> IO.inspect()
 
 # Part 2
-# This would be nicer if I passed an anonymous function as the rule instead of hard coding it
 
 defmodule Day3 do
   def part2 do
     input = File.read!("day3.txt") |> String.split("\n", trim: true)
 
-    oxygen_generator_rating(input, 0) * co2_scrubber_rating(input, 0)
+    oxygen_rating_rule = fn a, b -> if a <= b, do: "1", else: "0" end
+    co2_rating_rule = fn a, b -> if a <= b, do: "0", else: "1" end
+
+    find_rating(input, oxygen_rating_rule, 0) * find_rating(input, co2_rating_rule, 0)
   end
 
-  def oxygen_generator_rating([rating], _), do: String.to_integer(rating, 2)
+  def find_rating([rating], _, _), do: String.to_integer(rating, 2)
 
-  def oxygen_generator_rating(input, position) do
+  def find_rating(input, rule, position) do
     %{"0" => zero_count, "1" => one_count} =
       Enum.map(input, fn str -> String.at(str, position) end) |> Enum.frequencies()
 
-    new_input =
-      if one_count >= zero_count do
-        Enum.filter(input, fn str -> String.at(str, position) == "1" end)
-      else
-        Enum.filter(input, fn str -> String.at(str, position) == "0" end)
-      end
+    one_or_zero = rule.(zero_count, one_count)
 
-    oxygen_generator_rating(new_input, position + 1)
-  end
+    new_input = Enum.filter(input, fn str -> String.at(str, position) == one_or_zero end)
 
-  def co2_scrubber_rating([rating], _), do: String.to_integer(rating, 2)
-
-  def co2_scrubber_rating(input, position) do
-    %{"0" => zero_count, "1" => one_count} =
-      Enum.map(input, fn str -> String.at(str, position) end) |> Enum.frequencies()
-
-    new_input =
-      if zero_count <= one_count do
-        Enum.filter(input, fn str -> String.at(str, position) == "0" end)
-      else
-        Enum.filter(input, fn str -> String.at(str, position) == "1" end)
-      end
-
-    co2_scrubber_rating(new_input, position + 1)
+    find_rating(new_input, rule, position + 1)
   end
 end
 
