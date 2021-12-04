@@ -25,7 +25,8 @@ defmodule Day4 do
   end
 
   def part2 do
-    find_last_card(@numbers, @cards, MapSet.new())
+    # Skip the first 4 because a card can't win until move 5
+    find_last_card(Enum.drop(@numbers, 4), @cards, MapSet.new(Enum.take(@numbers, 4)))
   end
 
   def find_last_card([number | tail], cards, called_numbers) do
