@@ -16,33 +16,16 @@ defmodule Day6 do
   end
 
   def part2 do
-    positions = Map.new(0..8, fn i -> {i, 0} end) |> Map.merge(Enum.frequencies(@input))
+    positions =
+      Map.new(0..8, fn i -> {i, 0} end)
+      |> Map.merge(Enum.frequencies(@input))
+      |> Enum.map(fn {_day, amount} -> amount end)
+      |> List.to_tuple()
 
-    Enum.reduce(1..256, {positions, nil}, fn _day, {fish, prev} ->
-      Enum.reduce(8..0, {fish, prev}, fn day, {fish, prev} ->
-        case day do
-          8 ->
-            prev = fish[7]
-            updated = Map.replace(fish, 7, fish[8])
-
-            {updated, prev}
-
-          0 ->
-            updated =
-              Map.replace(fish, 8, prev)
-              |> Map.update!(6, &(&1 + prev))
-
-            {updated, nil}
-
-          number ->
-            new_prev = fish[number - 1]
-            updated = Map.replace(fish, number - 1, prev)
-
-            {updated, new_prev}
-        end
-      end)
+    Enum.reduce(1..256, positions, fn _day, {p1, p2, p3, p4, p5, p6, p7, p8, p9} ->
+      {p2, p3, p4, p5, p6, p7, p8 + p1, p9, p1}
     end)
-    |> then(fn {fish, _} -> Map.values(fish) |> Enum.sum() end)
+    |> Tuple.sum()
   end
 end
 
