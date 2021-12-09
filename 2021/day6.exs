@@ -19,7 +19,7 @@ defmodule Day6 do
     positions =
       Map.new(0..8, fn i -> {i, 0} end)
       |> Map.merge(Enum.frequencies(@input))
-      |> Enum.map(fn {_day, amount} -> amount end)
+      |> Map.values
       |> List.to_tuple()
 
     Enum.reduce(1..256, positions, fn _day, {p1, p2, p3, p4, p5, p6, p7, p8, p9} ->
