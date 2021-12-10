@@ -1,60 +1,69 @@
 defmodule Day8 do
+  import MapSet
+
   @input File.read!("Day8.txt")
          |> String.split("\n", trim: true)
          |> Enum.map(fn str -> String.split(str, " | ") end)
          |> Enum.map(fn [signal, output] -> [String.split(signal), String.split(output)] end)
-  @signal_map ["a", "b", "c", "d", "e", "f", "g"] |> Enum.map(&{&1, nil}) |> Map.new()
-  # mapping 
-  #  aaaa        1111
-  # b    c      2    3
-  # b    c      2    3
-  #  dddd   to   4444
-  # e    f      5    6
-  # e    f      5    6
-  #  gggg        7777
-
-  @unique_display_lengths MapSet.new([2, 3, 4, 7])
-  # for 1, 4, 7, 8
+         |> Enum.map(fn [signal, output] ->
+           [
+             Enum.sort_by(signal, &String.length/1)
+             |> Enum.map(fn str -> String.graphemes(str) |> MapSet.new() end),
+             output |> Enum.map(fn str -> String.graphemes(str) |> Enum.sort() |> Enum.join() end)
+           ]
+         end)
 
   def part1 do
+    unique_display_lengths = MapSet.new([2, 3, 4, 7])
+
     Enum.map(@input, fn [_signal_patterns, output] ->
       Enum.count(output, fn str ->
-        MapSet.member?(@unique_display_lengths, String.length(str))
+        member?(unique_display_lengths, String.length(str))
       end)
     end)
     |> Enum.sum()
   end
 
   def part2 do
-    Enum.map(@input, fn [signal_patterns, output] ->
-      solve_row(
-        Enum.sort_by(signal_patterns, &String.length/1) |> String.graphemes() |> MapSet.new,
-        ouput,
-        @signal_map
-      )
+    Enum.reduce(@input, 0, fn [signal_patterns, output], acc ->
+      acc + solve_row(signal_patterns, output)
     end)
   end
 
-  defp solve_row([one, seven, four | tail], output, map) do
-    # top bar
-    top_bar = MapSet.difference(seven, one)
-    map = Map.update(map, top_bar, 1)
+  defp solve_row([one, seven, four | tail], output) do
+    eight = List.last(tail)
 
-    [right_side1, right_side2] = MapSet.to_list(one)
+    two_three_five = Enum.filter(tail, &(Enum.count(&1) == 5))
+    zero_six_nine = Enum.filter(tail, &(Enum.count(&1) == 6))
 
-    two_three_five = Enum.filter(tail, & Enum.count(&1) == 5)
-    zero_six_nine = Enum.filter(tail, & Enum.count(&1) == 6)
+    three = Enum.find(two_three_five, fn set -> subset?(one, set) end)
 
-    three = Enum.find(two_three_five, fn set -> MapSet.member?(set, right_side_1) && MapSet.member?(set, right_side_2) end)
+    middle_bar = intersection(four, three) |> difference(one) |> Enum.at(0)
 
-    middle_bar = MapSet.intersection(four, three) |> MapSet.difference(one)
+    nine = Enum.find(zero_six_nine, fn set -> difference(set, three) |> Enum.count() == 1 end)
 
-    map = Map.update(map, middle_bar, 4)
+    top_left = difference(nine, three) |> Enum.at(0)
+    six = Enum.find(zero_six_nine, fn set -> member?(set, middle_bar) && set != nine end)
+    zero = Enum.find(zero_six_nine, fn set -> set != six && set != nine end)
+    five = Enum.find(two_three_five, fn set -> member?(set, top_left) end)
+    two = Enum.find(two_three_five, fn set -> set != five && set != three end)
 
+    map = %{
+      Enum.join(zero) => "0",
+      Enum.join(one) => "1",
+      Enum.join(two) => "2",
+      Enum.join(three) => "3",
+      Enum.join(four) => "4",
+      Enum.join(five) => "5",
+      Enum.join(six) => "6",
+      Enum.join(seven) => "7",
+      Enum.join(eight) => "8",
+      Enum.join(nine) => "9"
+    }
 
-    five = Enum.find(two_three_five, 
-
+    Enum.reduce(output, "", fn str, acc -> acc <> map[str] end) |> String.to_integer()
   end
 end
 
 Day8.part1() |> IO.inspect()
+Day8.part2() |> IO.inspect()
