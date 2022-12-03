@@ -7,32 +7,26 @@ defmodule Day3 do
 
   def part1 do
     Enum.reduce(@input, 0, fn str, acc ->
-      length = String.length(str) |> div(2)
-
-      shared_item =
-        String.split_at(str, length)
+      item =
+        String.split_at(str, div(String.length(str), 2))
         |> Tuple.to_list()
-        |> Enum.map(&String.codepoints/1)
-        |> Enum.map(&MapSet.new/1)
-        |> Enum.reduce(&MapSet.intersection/2)
-        |> Enum.at(0)
+        |> shared_item()
 
-      acc + @scores[shared_item]
+      acc + @scores[item]
     end)
   end
 
   # The badge is the shared item between a grouping of three elves
   def part2 do
     Enum.chunk_every(@input, 3)
-    |> Enum.reduce(0, fn three_elves, acc ->
-      badge =
-        Enum.map(three_elves, &String.codepoints/1)
-        |> Enum.map(&MapSet.new/1)
-        |> Enum.reduce(&MapSet.intersection/2)
-        |> Enum.at(0)
+    |> Enum.reduce(0, fn elves, acc -> acc + @scores[shared_item(elves)] end)
+  end
 
-      acc + @scores[badge]
-    end)
+  def shared_item(list_of_strings) do
+    Enum.map(list_of_strings, &String.codepoints/1)
+    |> Enum.map(&MapSet.new/1)
+    |> Enum.reduce(&MapSet.intersection/2)
+    |> Enum.at(0)
   end
 end
 
