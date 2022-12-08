@@ -17,8 +17,7 @@ defmodule Day5 do
     Enum.reduce(@commands, @stacks, fn {quantity, from, to}, stacks ->
       move(stacks, quantity, from, to)
     end)
-    |> Enum.map(fn {_k, v} -> hd(v) end)
-    |> Enum.join()
+    |> Enum.map_join(fn {_k, v} -> hd(v) end)
   end
 
   def part2 do
@@ -27,8 +26,7 @@ defmodule Day5 do
 
       Map.update!(stacks, to, &(crates ++ &1)) |> Map.update!(from, &Enum.drop(&1, quantity))
     end)
-    |> Enum.map(fn {_k, v} -> hd(v) end)
-    |> Enum.join()
+    |> Enum.map_join(fn {_k, v} -> hd(v) end)
   end
 
   defp move(stacks, 0, _from, _to), do: stacks
