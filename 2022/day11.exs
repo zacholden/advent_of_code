@@ -18,6 +18,10 @@ defmodule Day11 do
   # and the integers get too large without reducing the danger level somehow.
   # There must be a math solution where you can lower the numbers but get
   # the same result from the monkeys.
+  #
+  # It turns out the answer was using the remainder of dividng the item value by
+  # the product of the divisors of the monkeys. It is called the Chinese Remainder
+  # Theorem.
   def part1 do
     monkeys = Map.new(@input, fn monkey_args -> new_monkey(monkey_args) end)
     keys = Map.keys(monkeys)
@@ -27,8 +31,9 @@ defmodule Day11 do
         monkey = monkeys[key]
 
         items = Enum.map(monkey.starting_items, monkey.operation)
+        worry_level_manager = fn item -> div(item, 3) end
 
-        inspect_items(key, monkey, items, monkeys)
+        inspect_items(key, monkey, items, monkeys, worry_level_manager)
       end)
     end)
     |> Enum.map(fn {_k, monkey} -> monkey.inspections end)
@@ -37,18 +42,43 @@ defmodule Day11 do
     |> Enum.product()
   end
 
-  def inspect_items(_, _, [], monkeys), do: monkeys
+  def part2 do
+    monkeys = Map.new(@input, fn monkey_args -> new_monkey(monkey_args) end)
+    keys = Map.keys(monkeys)
+    product_of_divisors = Enum.map(monkeys, fn {_k, v} -> v.divisor end) |> Enum.product()
 
-  def inspect_items(key, monkey, [item | rest], monkeys) do
-    new_worry_level = item |> div(3)
-    recipient = if divisible?(new_worry_level, monkey.divisor), do: monkey.truthy_monkey, else: monkey.falsy_monkey
+    Enum.reduce(1..10000, monkeys, fn _i, monkeys ->
+      Enum.reduce(keys, monkeys, fn key, monkeys ->
+        monkey = monkeys[key]
+
+        items = Enum.map(monkey.starting_items, monkey.operation)
+        worry_level_manager = fn item -> rem(item, product_of_divisors) end
+
+        inspect_items(key, monkey, items, monkeys, worry_level_manager)
+      end)
+    end)
+    |> Enum.map(fn {_k, monkey} -> monkey.inspections end)
+    |> Enum.sort(:desc)
+    |> Enum.take(2)
+    |> Enum.product()
+  end
+
+  def inspect_items(_, _, [], monkeys, _manager), do: monkeys
+
+  def inspect_items(key, monkey, [item | rest], monkeys, manager) do
+    new_worry_level = manager.(item)
+
+    recipient =
+      if divisible?(new_worry_level, monkey.divisor),
+        do: monkey.truthy_monkey,
+        else: monkey.falsy_monkey
 
     updated_monkeys =
       update_in(monkeys, [key, :starting_items], &tl(&1))
       |> update_in([key, :inspections], &(&1 + 1))
       |> update_in([recipient, :starting_items], &(&1 ++ [new_worry_level]))
 
-    inspect_items(key, monkey, rest, updated_monkeys)
+    inspect_items(key, monkey, rest, updated_monkeys, manager)
   end
 
   def new_monkey([name, starting_items, operation, divisor, truthy_monkey, falsy_monkey]) do
@@ -77,4 +107,4 @@ defmodule Day11 do
 end
 
 Day11.part1() |> IO.inspect()
-# Day11.part2() |> IO.inspect()
+Day11.part2() |> IO.inspect()
