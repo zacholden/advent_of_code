@@ -17,41 +17,41 @@ defmodule Day10 do
   end
 
   def part2 do
+    chunks = 40
+
     run(@input)
-    |> Enum.map(fn {cycle, score, _} -> {cycle, score} end)
     |> tl
+    |> Enum.map(fn {cycle, score, _} -> {cycle, score} end)
     |> Enum.chunk_every(chunks)
-    |> Enum.reduce("", fn list, acc ->
-      line = Enum.map_join(list, fn {cycle, score} ->
-        if score in [rem(cycle, 40) - 2, rem(cycle, 40) - 1, rem(cycle, 40)] do
+    |> Enum.map_join("\n", fn list ->
+      Enum.map_join(list, fn {cycle, score} ->
+        if score in (rem(cycle, chunks) - 2)..rem(cycle, chunks) do
           "#"
         else
           "."
         end
       end)
-
-      acc <> line <> "\n"
     end)
-    |> IO.puts
+    |> IO.puts()
   end
 
   def run(input) do
-      Enum.reduce(@input, [{0, 1, 0}], fn {command, incoming_add},
-                                          acc = [{cycle, score, previous_add} | _tail] ->
-        new_score = score + previous_add
+    Enum.reduce(input, [{0, 1, 0}], fn {command, incoming_add},
+                                       acc = [{cycle, score, previous_add} | _tail] ->
+      new_score = score + previous_add
 
-        new_cycles =
-          case command do
-            "addx" ->
-              [{cycle + 1, new_score, 0}, {cycle + 2, new_score, incoming_add}]
+      new_cycles =
+        case command do
+          "addx" ->
+            [{cycle + 1, new_score, 0}, {cycle + 2, new_score, incoming_add}]
 
-            "noop" ->
-              [{cycle + 1, new_score, 0}]
-          end
+          "noop" ->
+            [{cycle + 1, new_score, 0}]
+        end
 
-        Enum.reduce(new_cycles, acc, fn i, inner_acc -> [i | inner_acc] end)
-      end)
-      |> Enum.reverse()
+      Enum.reduce(new_cycles, acc, fn i, inner_acc -> [i | inner_acc] end)
+    end)
+    |> Enum.reverse()
   end
 end
 
