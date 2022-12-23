@@ -1,112 +1,70 @@
 defmodule Day14 do
-  def part1 do
-    read_file("day14.txt")
-    |> simulate
-    |> Enum.count(fn {_k, v} -> v == "o" end)
-  end
+  @sand "o"
+  @rock "#"
+  @cave File.read!("day14.txt")
+        |> String.split("\n", trim: true)
+        |> Enum.map(fn str -> String.split(str, " -> ") end)
+        |> Enum.map(fn list ->
+          Enum.map(list, fn str ->
+            String.split(str, ",") |> Enum.map(&String.to_integer/1) |> List.to_tuple()
+          end)
+        end)
+        |> Enum.map(fn list -> Enum.chunk_every(list, 2, 1, :discard) end)
+        |> Enum.reduce(%{}, fn list, acc ->
+          Enum.reduce(list, acc, fn [{x1, y1}, {x2, y2}], inner_acc ->
+            run = for x <- x1..x2, y <- y1..y2, do: {x, y}
+
+            Enum.reduce(run, inner_acc, fn coord, inner_inner_acc ->
+              Map.put(inner_inner_acc, coord, @rock)
+            end)
+          end)
+        end)
 
   # Part 2 takes about 25 miutes to finish. I need to learn how to use
   # Stream.unfold to avoid a ton of non TCO recursion here I think.
-  def part2 do
-    cave_without_floor = read_file("day14.txt")
+  #
+  # Update from the future I think the actual problem was all of the
+  # filtering on big map it runs in under a second now.
+  #
+  # I think I understand Stream.unfold better now but part 1 is missing
+  # one graind of sand when I draw it. Returing {acc, nil} works for part 2
+  # but not part 1 and I can't figure out why.
 
-    {min_x, max_x} = Enum.map(cave_without_floor, fn {{x, _y}, _} -> x end) |> Enum.min_max()
-    max_y = Enum.map(cave_without_floor, fn {{_x, y}, _} -> y end) |> Enum.max()
-    floor_y = max_y + 2
+  def part1 do
+    bottom = Map.keys(@cave) |> Enum.map(fn {_x, y} -> y end) |> Enum.max()
+
+    Stream.unfold(@cave, fn cave -> drop_sand(cave, bottom, {500, 0}) end)
+  end
+
+  def part2 do
+    cave_without_floor = @cave
+
+    floor =
+      Map.keys(cave_without_floor) |> Enum.map(fn {_x, y} -> y end) |> Enum.max() |> Kernel.+(2)
+
+    middle = 500
+    floor_width = Enum.reduce(0..floor, 1, fn _y, acc -> acc + 2 end) |> div(2)
 
     cave =
-      Enum.reduce((min_x - 1000)..(max_x + 1000), cave_without_floor, fn x, acc ->
-        Map.put(acc, {x, floor_y}, "#")
+      Enum.reduce((middle - floor_width)..(middle + floor_width), cave_without_floor, fn x, acc ->
+        Map.put(acc, {x, floor}, @rock)
       end)
 
-    simulate2(cave)
-    |> Enum.count(fn {_k, v} -> v == "o" end)
+    Stream.unfold(cave, fn cave -> drop_sand(cave, floor, {500, 0}) end)
   end
 
-  def simulate2(cave) do
-    start = {500, 0}
-
-    new_cave = drop_sand2(cave, start)
-
-    if new_cave[start] == "o" do
-      new_cave
+  def drop_sand(cave, bottom, location = {x, y}) do
+    if cave[{500, 0}] == @sand do
+      {cave, nil}
     else
-      simulate2(new_cave)
-    end
-  end
+      space = Enum.find([{x, y + 1}, {x - 1, y + 1}, {x + 1, y + 1}], &(!cave[&1]))
 
-  def drop_sand2(cave, start) do
-    {start_x, start_y} = start
-
-    landing_spots = Enum.filter(cave, fn {{x, y}, _v} -> start_x == x && start_y < y end)
-    {{x, y}, _object} = Enum.min_by(landing_spots, fn {{_x, y}, _v} -> y end)
-
-    cond do
-      is_nil(cave[{x - 1, y}]) ->
-        drop_sand2(cave, {x - 1, y})
-
-      is_nil(cave[{x + 1, y}]) ->
-        drop_sand2(cave, {x + 1, y})
-
-      true ->
-        Map.put(cave, {x, y - 1}, "o")
-    end
-  end
-
-  def simulate(cave) do
-    bottom = Map.keys(cave) |> Enum.map(fn {_x, y} -> y end) |> Enum.max()
-
-    {result, new_cave} = drop_sand(cave, bottom, {500, 0})
-
-    if result == :cont do
-      simulate(new_cave)
-    else
-      new_cave
-    end
-  end
-
-  def drop_sand(cave, bottom, start) do
-    {start_x, start_y} = start
-
-    landing_spots = Enum.filter(cave, fn {{x, y}, _v} -> start_x == x && start_y < y end)
-
-    if start_y < bottom do
-      {{x, y}, _object} = Enum.min_by(landing_spots, fn {{_x, y}, _v} -> y end)
-
-      cond do
-        is_nil(cave[{x - 1, y}]) ->
-          drop_sand(cave, bottom, {x - 1, y})
-
-        is_nil(cave[{x + 1, y}]) ->
-          drop_sand(cave, bottom, {x + 1, y})
-
-        true ->
-          {:cont, Map.put(cave, {x, y - 1}, "o")}
+      case space do
+        nil -> {cave, Map.put(cave, location, @sand)}
+        {_, y} when y > bottom -> nil
+        _ -> drop_sand(cave, bottom, space)
       end
-    else
-      {:halt, cave}
     end
-  end
-
-  def read_file(path) do
-    File.read!(path)
-    |> String.split("\n", trim: true)
-    |> Enum.map(fn str -> String.split(str, " -> ") end)
-    |> Enum.map(fn list ->
-      Enum.map(list, fn str ->
-        String.split(str, ",") |> Enum.map(&String.to_integer/1) |> List.to_tuple()
-      end)
-    end)
-    |> Enum.map(fn list -> Enum.chunk_every(list, 2, 1, :discard) end)
-    |> Enum.reduce(%{}, fn list, acc ->
-      Enum.reduce(list, acc, fn [{x1, y1}, {x2, y2}], inner_acc ->
-        run = for x <- x1..x2, y <- y1..y2, do: {x, y}
-
-        Enum.reduce(run, inner_acc, fn coord, inner_inner_acc ->
-          Map.put(inner_inner_acc, coord, "#")
-        end)
-      end)
-    end)
   end
 
   def draw(grid) do
@@ -125,5 +83,12 @@ defmodule Day14 do
   end
 end
 
-Day14.part1() |> IO.inspect()
-Day14.part2() |> IO.inspect()
+# Answers
+
+Day14.part1() |> Enum.count() |> IO.inspect()
+Day14.part2() |> Enum.count() |> IO.inspect()
+
+# Drawings
+
+# Day14.part1() |> Enum.reduce(&Map.merge/2) |> Day14.draw()
+# Day14.part2() |> Enum.reduce(&Map.merge/2) |> Day14.draw()
