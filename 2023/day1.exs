@@ -12,34 +12,28 @@ defmodule Day1 do
   def part2 do
     File.read!("day1.txt")
     |> String.split()
-    |> Enum.map(&extract/1)
-    |> Enum.map(fn list -> [hd(list), List.last(list)] |> Integer.undigits() end)
+    |> Enum.map(fn str ->
+      extract(str)
+      |> then(fn numbers -> String.to_integer(String.first(numbers) <> String.last(numbers)) end)
+    end)
     |> Enum.sum()
   end
 
-  def extract(str), do: extract(str, [])
-  def extract("one" <> rest, output), do: extract("ne" <> rest, [1 | output])
-  def extract("two" <> rest, output), do: extract("wo" <> rest, [2 | output])
-  def extract("three" <> rest, output), do: extract("hree" <> rest, [3 | output])
-  def extract("four" <> rest, output), do: extract("our" <> rest, [4 | output])
-  def extract("five" <> rest, output), do: extract("ive" <> rest, [5 | output])
-  def extract("six" <> rest, output), do: extract("ix" <> rest, [6 | output])
-  def extract("seven" <> rest, output), do: extract("even" <> rest, [7 | output])
-  def extract("eight" <> rest, output), do: extract("ight" <> rest, [8 | output])
-  def extract("nine" <> rest, output), do: extract("ine" <> rest, [9 | output])
-  def extract("1" <> rest, output), do: extract(rest, [1 | output])
-  def extract("2" <> rest, output), do: extract(rest, [2 | output])
-  def extract("3" <> rest, output), do: extract(rest, [3 | output])
-  def extract("4" <> rest, output), do: extract(rest, [4 | output])
-  def extract("5" <> rest, output), do: extract(rest, [5 | output])
-  def extract("6" <> rest, output), do: extract(rest, [6 | output])
-  def extract("7" <> rest, output), do: extract(rest, [7 | output])
-  def extract("8" <> rest, output), do: extract(rest, [8 | output])
-  def extract("9" <> rest, output), do: extract(rest, [9 | output])
+  def extract(<<>>), do: <<>>
 
-  def extract(<<_char::binary-size(1)>> <> rest, output), do: extract(rest, output)
+  def extract(<<int, rest::binary>>) when int in ?1..?9, do: <<int>> <> extract(rest)
 
-  def extract("", output), do: Enum.reverse(output)
+  def extract(<<"one", rest::binary>>), do: "1" <> extract("e" <> rest)
+  def extract(<<"two", rest::binary>>), do: "2" <> extract("o" <> rest)
+  def extract(<<"three", rest::binary>>), do: "3" <> extract("e" <> rest)
+  def extract(<<"four", rest::binary>>), do: "4" <> extract(rest)
+  def extract(<<"five", rest::binary>>), do: "5" <> extract("e" <> rest)
+  def extract(<<"six", rest::binary>>), do: "6" <> extract(rest)
+  def extract(<<"seven", rest::binary>>), do: "7" <> extract("n" <> rest)
+  def extract(<<"eight", rest::binary>>), do: "8" <> extract("t" <> rest)
+  def extract(<<"nine", rest::binary>>), do: "9" <> extract("e" <> rest)
+
+  def extract(<<_, rest::binary>>), do: extract(rest)
 end
 
 Day1.part1() |> IO.inspect()
