@@ -6,32 +6,35 @@ input =
     [game, rest] = String.split(str, ":")
     [winners, numbers] = String.split(rest, " | ")
 
-    {String.trim(game) |> String.to_integer(), String.split(winners) |> MapSet.new(),
-     String.split(numbers)}
+    winners =
+      MapSet.intersection(
+        String.split(winners) |> MapSet.new(),
+        String.split(numbers) |> MapSet.new()
+      )
+      |> Enum.count()
+
+    {String.trim(game) |> String.to_integer(), winners}
   end)
 
 # Part 1
-Enum.reduce(input, 0, fn {_round, set, numbers}, acc ->
-  winners = Enum.count(numbers, fn num -> MapSet.member?(set, num) end)
-  if winners == 0, do: acc, else: acc + Integer.pow(2, winners - 1)
-end)
+Enum.reduce(input, 0, fn {_round, winners}, acc -> acc + Bitwise.bsl(1, winners - 1) end)
 |> IO.inspect()
 
 # Part 2
-Enum.reduce(input, %{}, fn {round, set, numbers}, acc ->
-  card_score = Enum.count(numbers, fn num -> MapSet.member?(set, num) end)
-
-  if card_score == 0 do
+reducer = fn
+  {_round, 0}, acc ->
     acc
-  else
+
+  {round, winners}, acc ->
     current_quantity = Map.get(acc, round, 1)
-    range = (round + 1)..(round + card_score)
+    range = (round + 1)..(round + winners)
 
     Enum.reduce(range, acc, fn i, inner_acc ->
       Map.update(inner_acc, i, current_quantity + 1, &(&1 + current_quantity))
     end)
-  end
-end)
+end
+
+Enum.reduce(input, %{}, reducer)
 |> Map.values()
 |> Enum.sum()
 |> IO.inspect()
