@@ -4,9 +4,8 @@ defmodule Day3 do
 
   def part1 do
     grid = grid()
-    visited = MapSet.new()
 
-    Enum.reduce(coords(grid), {0, visited}, fn {x, y}, {acc_int, acc_set} ->
+    Enum.reduce(coords(grid), {0, MapSet.new()}, fn {x, y}, {acc_int, acc_set} ->
       char = grid[{x, y}]
       int = String.contains?(@numbers, char)
 
