@@ -18,8 +18,40 @@ defmodule Day5 do
     |> Enum.min()
   end
 
+  def part2 do
+    {seeds, maps} = parse()
+
+    seed_ranges = Enum.chunk_every(seeds, 2) |> Enum.map(fn [a,b] -> a .. a + b - 1 end) |> IO.inspect
+
+    Enum.map(seed_ranges, fn srs..srf = seed_range ->
+      Enum.reduce(maps, [], fn list_of_maps ->
+        # this approach does not work because we need to retain the parts of the
+        # range that are not used by the source ranges
+        Enum.reduce(list_of_maps, fn {ds..df, ss..sf = source_range, _} ->
+          cond do
+            srs <= ss && srf >= sf ->
+              [srs .. ss - 1, ds..df, sf + 1 ..srf]
+            srs >= ss && srf <= sf ->
+              delta = srs - ss
+              [ds + delta .. ds + delta + Range.size(seed_range)]
+            srs < ss && srf <= sf ->
+              [srs .. ss - 1, ds .. ds + Range.size(seed_range)]
+            srs > ss && srf >= sf ->
+              delta = srs - ss
+              run = Range.size(srs..sf)
+
+              [ds + delta .. ds + delta + run, sf + 1 .. srf]
+          end
+        end)
+
+      end) |> Enum.uniq |> IO.inspect
+    end)
+    |> Enum.map(fn range -> Enum.min(range) end)
+    |> Enum.min
+  end
+
   def parse do
-    [seeds | maps] = File.read!("day5.txt") |> String.split("\n\n")
+    [seeds | maps] = File.read!("day5test.txt") |> String.split("\n\n")
 
     seeds =
       String.split(seeds, ": ") |> tl |> hd |> String.split() |> Enum.map(&String.to_integer/1)
@@ -41,3 +73,4 @@ defmodule Day5 do
 end
 
 Day5.part1() |> IO.inspect()
+Day5.part2() |> IO.inspect()
