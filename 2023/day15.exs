@@ -21,14 +21,8 @@ defmodule Day15 do
       {str, num}, acc ->
         box = hash(str)
 
-        if Enum.any?(Map.get(acc, box, []), fn {lens, _power} -> str == lens end) do
-          list = acc[box]
-
-          {_element, index} =
-            Enum.with_index(list)
-            |> Enum.find(fn {{element, _power}, _index} -> str == element end)
-
-          Map.update!(acc, box, &List.replace_at(&1, index, {str, num}))
+        if List.keymember?(acc[box], str, 0) do
+          Map.update!(acc, box, &List.keyreplace(&1, str, 0, {str, num}))
         else
           Map.update!(acc, box, &List.insert_at(&1, -1, {str, num}))
         end
@@ -36,7 +30,7 @@ defmodule Day15 do
       str, acc ->
         box = hash(str)
 
-        Map.update!(acc, box, &Enum.reject(&1, fn {lens, _power} -> lens == str end))
+        Map.update!(acc, box, &List.keydelete(&1, str, 0))
     end)
     |> Enum.map(fn {k, list} ->
       Enum.with_index(list, 1)
@@ -47,7 +41,11 @@ defmodule Day15 do
     |> Enum.sum()
   end
 
-  def hash(str) when is_binary(str), do: String.to_charlist(str) |> hash
+  def hash(str) when is_binary(str) do
+    for <<char::8 <- str>>, reduce: 0 do
+      acc -> acc |> Kernel.+(char) |> Kernel.*(17) |> rem(256)
+    end
+  end
 
   def hash(list) do
     Enum.reduce(list, 0, fn i, acc ->
