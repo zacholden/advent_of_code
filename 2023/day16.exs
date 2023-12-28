@@ -15,20 +15,10 @@ defmodule Day16 do
     {min_x, max_x} = Enum.map(keys, fn {x, _y} -> x end) |> Enum.min_max()
     {min_y, max_y} = Enum.map(keys, fn {_x, y} -> y end) |> Enum.min_max()
 
-    lefts =
-      Enum.filter(keys, fn {x, _y} -> x == min_x end)
-      |> Enum.map(fn coord -> {coord, :right} end)
-
-    tops =
-      Enum.filter(keys, fn {_x, y} -> y == min_y end)
-      |> Enum.map(fn coord -> {coord, :down} end)
-
-    rights =
-      Enum.filter(keys, fn {x, _y} -> x == max_x end)
-      |> Enum.map(fn coord -> {coord, :left} end)
-
-    bottoms =
-      Enum.filter(keys, fn {_x, y} -> y == max_y end) |> Enum.map(fn coord -> {coord, :up} end)
+    lefts = Enum.map(min_y..max_y, fn y -> {{min_x, y}, :right} end)
+    rights = Enum.map(min_y..max_y, fn y -> {{max_x, y}, :left} end)
+    tops = Enum.map(min_x..max_x, fn x -> {{x, min_y}, :down} end)
+    bottoms = Enum.map(min_x..max_x, fn x -> {{x, max_y}, :down} end)
 
     List.flatten([lefts, rights, bottoms, tops])
     |> Enum.map(fn laser -> run(grid, MapSet.new(), [laser]) end)
@@ -38,25 +28,17 @@ defmodule Day16 do
   def run(grid, visited, lasers) do
     {new_visited, new_lasers} =
       Enum.reduce(lasers, {visited, []}, fn {{x, y}, _dir} = laser, {visited, lasers_acc} ->
-        moves = move(grid[{x, y}], laser)
-
-        new_moves =
-          case moves do
-            [a, b] -> [a, b | lasers_acc]
-            [a] -> [a | lasers_acc]
-            [] -> lasers_acc
-          end
-          |> Enum.reject(fn move -> MapSet.member?(visited, move) end)
+        lasers = move(grid[{x, y}], laser) |> Enum.reject(&MapSet.member?(visited, &1))
 
         new_set = if Map.has_key?(grid, {x, y}), do: MapSet.put(visited, laser), else: visited
 
-        {new_set, new_moves}
+        {new_set, lasers ++ lasers_acc}
       end)
 
-    if new_visited != visited do
-      run(grid, new_visited, new_lasers)
-    else
+    if MapSet.equal?(visited, new_visited) do
       MapSet.new(visited, fn {a, _b} -> a end) |> MapSet.size()
+    else
+      run(grid, new_visited, new_lasers)
     end
   end
 
