@@ -22,14 +22,14 @@ totals = Enum.map(input, fn {k, v} -> {k, Enum.reduce(v, %{}, merger)} end)
 # Part 1
 limits = %{"red" => 12, "green" => 13, "blue" => 14}
 
-Enum.filter(totals, fn {_k, v} ->
-  Enum.all?(v, fn {color, value} -> value <= limits[color] end)
+Enum.reject(totals, fn {_k, v} ->
+  Enum.any?(v, fn {color, value} -> value > limits[color] end)
 end)
 |> Enum.reduce(0, fn {k, _cubes}, acc -> acc + k end)
 |> IO.inspect()
 
 # Part 2
 Enum.reduce(totals, 0, fn {_game_id, cubes}, acc ->
-  acc + (Map.values(cubes) |> Enum.product())
+  Map.values(cubes) |> Enum.product() |> Kernel.+(acc)
 end)
 |> IO.inspect()

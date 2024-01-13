@@ -25,14 +25,16 @@ defmodule Day10 do
     |> Enum.chunk_every(chunks)
     |> Enum.map_join("\n", fn list ->
       Enum.map_join(list, fn {cycle, score} ->
-        if score in (rem(cycle, chunks) - 2)..rem(cycle, chunks) do
+        position = cycle - 1
+        middle = rem(position, chunks)
+
+        if score in (middle - 1)..(middle + 1) do
           "#"
         else
           "."
         end
       end)
     end)
-    |> IO.puts()
   end
 
   def run(input) do
@@ -40,20 +42,17 @@ defmodule Day10 do
                                        acc = [{cycle, score, previous_add} | _tail] ->
       new_score = score + previous_add
 
-      new_cycles =
-        case command do
-          "addx" ->
-            [{cycle + 1, new_score, 0}, {cycle + 2, new_score, incoming_add}]
+      case command do
+        "addx" ->
+          [{cycle + 2, new_score, incoming_add}, {cycle + 1, new_score, incoming_add} | acc]
 
-          "noop" ->
-            [{cycle + 1, new_score, 0}]
-        end
-
-      Enum.reduce(new_cycles, acc, fn i, inner_acc -> [i | inner_acc] end)
+        "noop" ->
+          [{cycle + 1, new_score, incoming_add} | acc]
+      end
     end)
     |> Enum.reverse()
   end
 end
 
 Day10.part1() |> IO.inspect()
-Day10.part2() |> IO.inspect()
+Day10.part2() |> IO.puts()
