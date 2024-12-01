@@ -1,16 +1,15 @@
 defmodule Day9 do
-  @input File.stream!("day9.txt")
-         |> Enum.map(fn str -> String.split(str) |> Enum.map(&String.to_integer/1) end)
-
   def part1 do
-    Enum.map(@input, fn list ->
+    input("day9.txt")
+    |> Enum.map(@input, fn list ->
       recur(list) + List.last(list)
     end)
     |> Enum.sum()
   end
 
   def part2 do
-    Enum.map(@input, fn list ->
+    input("day9.txt")
+    |> Enum.map(@input, fn list ->
       recur(Enum.reverse(list)) + hd(list)
     end)
     |> Enum.sum()
@@ -23,6 +22,11 @@ defmodule Day9 do
       new_list = Enum.chunk_every(list, 2, 1, :discard) |> Enum.map(fn [a, b] -> b - a end)
       List.last(new_list) + recur(new_list)
     end
+  end
+
+  defp input(filename) do
+    File.stream!(filename)
+    |> Enum.map(fn str -> String.split(str) |> Enum.map(&String.to_integer/1) end)
   end
 end
 
