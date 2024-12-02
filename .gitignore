@@ -1,3 +1,5 @@
 *.txt
 *.bsp
 *.scala-build
+*.metals
+*.scalafmt.conf

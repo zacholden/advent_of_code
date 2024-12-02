@@ -5,12 +5,11 @@ object Day01:
     println(part2(input))
 
   def parse(): (Seq[Int], Seq[Int]) =
-    val lines = io.Source.fromFile("../inputs/2024day1.txt").getLines.toSeq
+    val lines = io.Source.fromFile("day01.txt").getLines.toSeq
     val linesSeq: Seq[(Int, Int)] = lines.map:
       case s"$a   $b" => (a.toInt, b.toInt)
 
     linesSeq.unzip
-
 
   def part1(lists: (Seq[Int], Seq[Int])): Int =
     val left = lists(0).sorted
@@ -20,7 +19,8 @@ object Day01:
 
   def part2(lists: (Seq[Int], Seq[Int])): Int =
     val left = lists(0)
-    val right = lists(1)
+    val frequencies = lists(1).groupBy(identity).view.mapValues(_.size)
 
-    // TODO: Use a hashmap
-    left.map(num => right.count(_ == num) * num).sum
+    left.fold(0) { (acc, i) =>
+      acc + (i * frequencies.getOrElse(i, 0))
+    }
