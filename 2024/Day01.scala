@@ -21,6 +21,5 @@ object Day01:
     val left = lists(0)
     val frequencies = lists(1).groupBy(identity).view.mapValues(_.size)
 
-    left.fold(0) { (acc, i) =>
+    left.fold(0): (acc, i) =>
       acc + (i * frequencies.getOrElse(i, 0))
-    }
