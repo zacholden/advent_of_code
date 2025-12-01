@@ -32,6 +32,6 @@ result = input.each do |dir|
   max = current if current > max
 end
 
-puts [x, y ,z].max
+puts [x, y, z].max
 
 puts max

@@ -1,7 +1,7 @@
 require 'set'
 
 class Particle
-  attr_reader :index, :position
+  attr_reader :index, :position, :deleted
   def initialize(index, position, velocity, acceleration)
     @index, @position, @velocity, @acceleration = index, position, velocity, acceleration
     @deleted = false
@@ -17,11 +17,7 @@ class Particle
   end
 
   def distance
-    @position[0].abs + @position[1].abs + @position[2].abs
-  end
-
-  def deleted
-    @deleted
+    @position[0..2].sum(&:abs)
   end
 
   def delete
@@ -35,7 +31,7 @@ class Container
   end
 
   def positions
-    @particles.reject(&:deleted).map(&:position)
+    @particles.filter_map { |p| !p.deleted && p.position }
   end
 
   def tick
@@ -45,13 +41,10 @@ class Container
 
   def remove_duplicates
     positions.each do |position|
-      dups = @particles.select { |particle| particle.position == position }
-      if dups.size > 1
-        dups.each(&:delete)
-      else
-        nil
-      end
+      dups = @particles.filter { it.position == position }
+      next unless dups.size > 1
+
+      dups.each(&:delete)
     end
   end
 end
-
