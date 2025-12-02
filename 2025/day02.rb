@@ -8,6 +8,7 @@ part1 = input.reduce(0) do |acc, range|
   acc + (range.filter do |int|
     arr = int.digits
     next unless arr.length.even?
+
     mid = arr.length / 2
     arr[..mid - 1] == arr[mid..]
   end).sum
@@ -19,9 +20,8 @@ part2 = input.reduce(0) do |acc, range|
   acc + (range.filter do |int|
     arr = int.digits
     mid = arr.length / 2
-    (1..mid).any? do |i|
-      arr.each_slice(i).uniq.count == 1
-    end
+
+    mid.downto(1).any? { |i| arr.each_slice(i).uniq.one? }
   end).sum
 end
 
