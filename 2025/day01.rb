@@ -25,14 +25,13 @@ position = 50
 
 input.each do |arr|
   hundreds, remainder = arr[1].divmod(size)
+  old_pos = position
 
   if arr.first == "L"
-    old_pos = position
     position = (position - remainder) % size
 
     covers_zero = !old_pos.zero? && (position.zero? || old_pos < position)
   else
-    old_pos = position
     position = (position + remainder) % size
 
     covers_zero = !old_pos.zero? && (position.zero? || old_pos > position)
