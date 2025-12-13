@@ -1,40 +1,13 @@
 input = File.read('day06.txt').split("\n")
 
-def run(arr, operation)
-  case operation
-  when '*'
-    arr.reduce(&:*)
-  when '+'
-    arr.sum
-  end
-end
+def solve(arr, operation) = operation == '+' ? arr.sum : arr.reduce(&:*)
 
 # part 1
-puts input.map(&:split).transpose.sum { |arr| run(arr[..-2].map(&:to_i), arr.last) }
+puts input.map(&:split).transpose.sum { solve(it[..-2].map(&:to_i), it.last) }
 
 # part 2
-columns = input.map { |str| str.split('') }.transpose
-operations = columns.map(&:pop).reject { |str| str.strip.empty? }
+transposed = input.map(&:chars).transpose
+operations = transposed.map(&:pop).reject { it.strip.empty? }
+columns = transposed.map { it.join.to_i }.slice_when { it.zero? }.map { it.reject(&:zero?) }
 
-result = 0
-i = 0
-ops_idx = 0
-problem = []
-
-loop do
-  val = columns[i]
-  number = val.to_a.join.strip.to_i
-  i += 1
-
-  if number.zero?
-    result += run(problem, operations[ops_idx])
-    problem = []
-    ops_idx += 1
-  else
-    problem << number
-  end
-
-  break if i > columns.length
-end
-
-puts result
+puts columns.zip(operations).sum { |column, operation| solve(column, operation) }
