@@ -1,10 +1,11 @@
 input = File.read("day07test.txt").split("\n").map { it.split('') }
-x = input.first.index("S")
-y = 0
+start_x = input.first.index("S")
+start_y = 1
 
 mutable = input.map(&:dup)
-mutable[y][x] = "|"
+mutable[start_y][start_x] = "|"
 
+y = start_y
 splits = 0
 
 loop do
@@ -27,4 +28,30 @@ end
 puts splits
 
 # part 2
-# this is very slow I think I need to memoize
+# this will never finish, I need to memoize
+last_row = input.length - 1
+
+stack = []
+x = start_x
+y = start_y
+permutations = 0
+
+loop do
+  if y == last_row
+    permutations += 1
+
+    y, x = stack.pop
+    break if y.nil?
+
+    next
+  end
+
+  if input[y][x] == '^'
+    stack << [y + 1, x + 1]
+    x -= 1
+  end
+
+  y += 1
+end
+
+puts permutations
