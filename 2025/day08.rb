@@ -13,82 +13,59 @@ end
 input = File.read("day08.txt").split.map { it.split(',').map(&:to_i) }.map { Coordinate.new(*it) }
 
 cache = {}
+input.each_with_index.to_a.combination(2) { |(a, i), (b, j)| cache[[i, j]] = a.distance(b) }
+ordered = cache.sort_by { |k, v| v }.map(&:first)
+length = 1000
 
-input.each.with_index do |coord, coord_idx|
-  input.each.with_index do |other, other_idx|
-    next if coord_idx == other_idx
+class BadUnionFind
+  attr_reader :groups
 
-    key = [coord_idx, other_idx].sort
+  def initialize
+    @groups = []
+  end
 
-    if cache.key?(key)
-      next
+  def find(a)
+    groups.find { it.include?(a) }
+  end
+
+  def union(a, b)
+    as = find(a)
+    bs = find(b)
+
+    if as && bs
+      return if as == bs
+
+      as_idx = groups.index(as)
+      bs_idx = groups.index(bs)
+
+      @groups[as_idx] = as.union(bs)
+      @groups.delete_at(bs_idx)
+    elsif as
+      as << b
+    elsif bs
+      bs << a
     else
-      cache[key] = coord.distance(other)
+      @groups << [a, b]
     end
   end
 end
 
-length = 1000
-
 # part 1
 
-groups = []
-queue = cache.sort_by { |k, v| -v }.map(&:first)
+buf = BadUnionFind.new
 
-length.times do
-  a, b = queue.pop
+length.times { |i| buf.union(*ordered[i]) }
 
-  a_group = groups.find { it.include?(a) }
-  b_group = groups.find { it.include?(b) }
-
-  next if a_group && b_group && a_group == b_group
-
-  if a_group && b_group
-    a_idx = groups.index(a_group)
-    b_idx = groups.index(b_group)
-
-    groups[a_idx] = a_group + b_group
-    groups.delete_at(b_idx)
-  elsif a_group
-    a_group << b
-  elsif b_group
-    b_group << a
-  else
-    groups << [a, b]
-  end
-end
-
-puts groups.sort_by(&:size).last(3).reduce(1) { |acc, group| acc * group.size }
+puts buf.groups.sort_by(&:size).last(3).reduce(1) { |acc, group| acc * group.size }
 
 # part 2
 
-groups = []
-queue = cache.sort_by { |k, v| -v }.map(&:first)
+buf = BadUnionFind.new
 
-loop do
-  a, b = queue.pop
+ordered.each do |a, b|
+  buf.union(a, b)
 
-  a_group = groups.find { it.include?(a) }
-  b_group = groups.find { it.include?(b) }
+  next unless buf.groups.first.length == length
 
-  next if a_group && b_group && a_group == b_group
-
-  if a_group && b_group
-    a_idx = groups.index(a_group)
-    b_idx = groups.index(b_group)
-
-    groups[a_idx] = a_group + b_group
-    groups.delete_at(b_idx)
-  elsif a_group
-    a_group << b
-  elsif b_group
-    b_group << a
-  else
-    groups << [a, b]
-  end
-
-  if groups.first.length == length
-    puts input[a].x * input[b].x
-    break
-  end
+  break puts input[a].x * input[b].x
 end
